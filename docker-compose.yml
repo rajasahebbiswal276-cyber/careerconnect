@@ -1,18 +1,24 @@
+
 services:
   mysql:
     image: mysql:8
+    container_name: careerconnect-mysql
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
       MYSQL_DATABASE: careerconnect
-    ports: ["3306:3306"]
+    volumes:
+      - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$${MYSQL_ROOT_PASSWORD}"]
       interval: 5s
       timeout: 5s
       retries: 20
 
   app:
     build: .
+    container_name: careerconnect-app
+    restart: unless-stopped
     depends_on:
       mysql:
         condition: service_healthy
@@ -20,5 +26,13 @@ services:
       SPRING_PROFILES_ACTIVE: mysql
       DB_URL: jdbc:mysql://mysql:3306/careerconnect?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       DB_USERNAME: root
-      DB_PASSWORD: root
-    ports: ["8080:8080"]
+      DB_PASSWORD: ${DB_PASSWORD}
+      PORT: 8083
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM: ${MAIL_FROM}
+    ports:
+      - "8083:8083"
+
+volumes:
+  mysql_data:

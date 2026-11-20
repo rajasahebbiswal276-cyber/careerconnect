@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/** Application user. Implements UserDetails so Spring Security can use it directly. */
+
 @Entity
 @Table(name = "users")
 public class User implements UserDetails {
